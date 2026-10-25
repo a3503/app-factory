@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "pnpm lint",
+      "pnpm typecheck",
+      "pnpm test",
+      "pnpm install",
+      "pnpm add *",
+      "pnpm remove *",
+      "expo start",
+      "expo prebuild",
+      "expo export",
+      "git status",
+      "git add",
+      "git commit",
+      "git diff",
+      "git log",
+      "git branch",
+      "git checkout",
+      "git stash",
+      "npx expo *",
+      "npx eas whoami",
+      "npx eas build:list",
+      "npx eas credentials",
+      "maestro test *"
+    ],
+    "ask": [
+      "eas build *",
+      "eas submit *",
+      "eas update *",
+      "git push *",
+      "pnpm add -g *",
+      "npm install -g *"
+    ],
+    "deny": [
+      "cat .env*",
+      "cat *.keystore",
+      "cat *.jks",
+      "cat secrets/*",
+      "cat *serviceaccount*.json",
+      "cat *credentials*.json",
+      "echo $ADMOB*",
+      "echo $REVENUECAT*",
+      "printenv | grep -i key",
+      "printenv | grep -i secret",
+      "printenv | grep -i token"
+    ]
+  }
+}
