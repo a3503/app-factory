@@ -1,0 +1,13 @@
+{
+  "name": "Serein — Bien-être & Organisation",
+  "short_name": "Serein",
+  "description": "Simplifie ta vie et relaxe-toi : tâches, habitudes, respiration guidée et journal d'humeur.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1225",
+  "theme_color": "#0f1225",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

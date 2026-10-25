@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f1225">
+<link rel="manifest" href="manifest.json">
+<title>Serein</title>
+<style>
+  :root{
+    --bg:#0f1225; --bg2:#161a35; --card:#1e2344; --card2:#252b52;
+    --txt:#eef0ff; --muted:#9aa0cc; --line:#2d3461;
+    --accent:#8b7cf6; --accent2:#5ad1c4; --warm:#f6a97c; --rose:#f67c9e;
+    --ok:#5ad1a4;
+    --r:22px;
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f1fb; --bg2:#ffffff; --card:#ffffff; --card2:#f0eefa;
+    --txt:#1c1b2e; --muted:#7b7a94; --line:#e4e0f2;
+    --accent:#7c6df0; --accent2:#2bb3a4; --warm:#e8894f; --rose:#e85c82;
+    --ok:#2ba878;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--txt);
+    display:flex; justify-content:center; overflow:hidden;
+    transition:background .4s, color .4s;
+  }
+  #app{
+    width:100%; max-width:430px; height:100vh; height:100dvh;
+    background:radial-gradient(130% 80% at 50% -10%, var(--bg2) 0%, var(--bg) 55%);
+    display:flex; flex-direction:column; position:relative; overflow:hidden;
+    transition:background .4s;
+  }
+  /* ---------- screens ---------- */
+  .screen{flex:1; overflow-y:auto; padding:58px 20px 110px; display:none; -webkit-overflow-scrolling:touch}
+  .screen.active{display:block; animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .screen::-webkit-scrollbar{display:none}
+
+  h1{font-size:26px;font-weight:700;letter-spacing:-.5px}
+  .sub{color:var(--muted);font-size:14px;margin-top:3px}
+  .section-t{font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:26px 2px 12px;font-weight:600}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  .card+.card{margin-top:14px}
+
+  /* ---------- home ---------- */
+  .hero{
+    background:linear-gradient(135deg, #8b7cf6 0%, #5ad1c4 120%);
+    border:none;color:#0f1225;padding:22px;position:relative;overflow:hidden
+  }
+  .hero .q{font-size:17px;font-weight:600;line-height:1.5;position:relative;z-index:1}
+  .hero .by{font-size:12px;opacity:.7;margin-top:10px;position:relative;z-index:1}
+  .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.18)}
+
+  .stats{display:flex;gap:12px;margin-top:14px}
+  .stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 14px;text-align:center}
+  .stat .n{font-size:28px;font-weight:700}
+  .stat .l{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+
+  .intent input{
+    width:100%;background:var(--card2);border:1px solid var(--line);border-radius:14px;
+    color:var(--txt);padding:13px 14px;font-size:15px;outline:none;font-family:inherit
+  }
+  .intent input::placeholder{color:var(--muted)}
+
+  .quick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+  .qbtn{
+    border:1px solid var(--line);border-radius:18px;padding:18px 14px;text-align:left;cursor:pointer;
+    background:var(--card);transition:transform .15s, background .2s
+  }
+  .qbtn:active{transform:scale(.96)}
+  .qbtn .ico{font-size:24px}
+  .qbtn .t{font-weight:600;margin-top:10px;font-size:15px}
+  .qbtn .d{font-size:12px;color:var(--muted);margin-top:2px}
+
+  /* ---------- tasks / habits ---------- */
+  .addrow{display:flex;gap:10px;margin-bottom:4px}
+  .addrow input{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:14px;color:var(--txt);padding:13px 14px;font-size:15px;outline:none;font-family:inherit}
+  .addrow input::placeholder{color:var(--muted)}
+  .addrow button,.fab-add{
+    background:var(--accent);border:none;color:#0f1225;font-weight:700;border-radius:14px;
+    padding:0 18px;font-size:22px;cursor:pointer;transition:transform .15s
+  }
+  .addrow button:active{transform:scale(.9)}
+
+  .item{display:flex;align-items:center;gap:13px;padding:14px 4px;border-bottom:1px solid var(--line)}
+  .item:last-child{border-bottom:none}
+  .check{width:24px;height:24px;border-radius:8px;border:2px solid var(--muted);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+  .check.done{background:var(--ok);border-color:var(--ok);color:#0f1225;font-weight:900}
+  .item .txt{flex:1;font-size:15px;transition:.2s}
+  .item.done .txt{color:var(--muted);text-decoration:line-through}
+  .del{color:var(--muted);font-size:20px;cursor:pointer;padding:4px 6px;opacity:.5}
+  .del:active{opacity:1}
+  .empty{text-align:center;color:var(--muted);font-size:14px;padding:26px 0}
+
+  .habit{display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--line)}
+  .habit:last-child{border-bottom:none}
+  .habit .emoji{font-size:22px;width:30px;text-align:center}
+  .habit .info{flex:1}
+  .habit .hn{font-weight:600;font-size:15px}
+  .habit .streak{font-size:12px;color:var(--warm);margin-top:2px}
+  .hdot{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+  .hdot.on{background:var(--warm);border-color:var(--warm);color:#0f1225}
+
+  /* ---------- breathing ---------- */
+  .breath-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:62vh;text-align:center}
+  .orb{
+    width:200px;height:200px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #a79bff, #8b7cf6 45%, #5ad1c4 120%);
+    display:flex;align-items:center;justify-content:center;margin:10px 0 30px;
+    box-shadow:0 0 70px rgba(139,124,246,.5);transition:transform 4s ease-in-out;
+  }
+  .orb .phase{font-size:18px;font-weight:600;color:#0f1225}
+  .orb.grow{transform:scale(1.35)}
+  .orb.shrink{transform:scale(.8)}
+  .tech{display:flex;gap:10px;margin:0 0 24px;flex-wrap:wrap;justify-content:center}
+  .chip{padding:9px 16px;border-radius:30px;border:1px solid var(--line);background:var(--card);font-size:13px;cursor:pointer;transition:.2s}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#0f1225;font-weight:600}
+  .bigbtn{
+    background:var(--accent);border:none;color:#0f1225;font-weight:700;font-size:16px;
+    padding:15px 40px;border-radius:30px;cursor:pointer;transition:transform .15s
+  }
+  .bigbtn:active{transform:scale(.95)}
+  .bigbtn.stop{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+  .timer-disp{font-size:14px;color:var(--muted);margin-top:16px}
+
+  /* ---------- mood ---------- */
+  .moods{display:flex;justify-content:space-between;margin:6px 0}
+  .mood{font-size:38px;cursor:pointer;filter:grayscale(.6) opacity(.55);transition:.2s;transform:scale(.9)}
+  .mood.sel{filter:none;transform:scale(1.15)}
+  .mood:active{transform:scale(1.05)}
+  textarea{
+    width:100%;background:var(--card2);border:1px solid var(--line);border-radius:14px;color:var(--txt);
+    padding:13px 14px;font-size:15px;outline:none;font-family:inherit;resize:none;min-height:90px;margin-top:4px
+  }
+  textarea::placeholder{color:var(--muted)}
+  .savebtn{width:100%;background:var(--accent2);border:none;color:#0f1225;font-weight:700;padding:14px;border-radius:14px;font-size:15px;cursor:pointer;margin-top:12px;transition:transform .15s}
+  .savebtn:active{transform:scale(.97)}
+  .log-entry{display:flex;gap:12px;padding:13px 4px;border-bottom:1px solid var(--line);align-items:flex-start}
+  .log-entry:last-child{border-bottom:none}
+  .log-entry .em{font-size:26px}
+  .log-entry .lt{flex:1}
+  .log-entry .ld{font-size:12px;color:var(--muted)}
+  .log-entry .ln{font-size:14px;margin-top:3px;line-height:1.4}
+
+  /* ---------- sounds ---------- */
+  .sounds{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sbtn{
+    border:1px solid var(--line);border-radius:18px;padding:16px;text-align:center;cursor:pointer;
+    background:var(--card);transition:transform .15s,background .2s,border-color .2s
+  }
+  .sbtn:active{transform:scale(.95)}
+  .sbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .sbtn.on .sd{color:rgba(255,255,255,.8)}
+  .sbtn .si{font-size:26px}
+  .sbtn .st{font-weight:600;margin-top:8px;font-size:14px}
+  .sbtn .sd{font-size:11px;color:var(--muted);margin-top:2px}
+  .vol-row{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .vol-row span{font-size:18px}
+  input[type=range]{flex:1;accent-color:var(--accent);height:4px}
+
+  /* ---------- week view ---------- */
+  .week{display:flex;justify-content:space-between;gap:6px}
+  .day{flex:1;text-align:center}
+  .day .dl{font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600}
+  .day .dm{font-size:22px;height:30px;line-height:30px}
+  .day .db{height:6px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+  .day .db i{display:block;height:100%;background:var(--warm);width:0;transition:width .5s}
+  .day.today .dl{color:var(--accent)}
+
+  /* ---------- theme toggle ---------- */
+  .theme-tog{
+    position:absolute;top:52px;right:20px;z-index:20;width:40px;height:40px;border-radius:50%;
+    border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:18px;
+    display:flex;align-items:center;justify-content:center;transition:transform .2s
+  }
+  .theme-tog:active{transform:scale(.88) rotate(30deg)}
+
+  /* ---------- nav ---------- */
+  nav{
+    position:absolute;bottom:0;left:0;right:0;height:78px;
+    background:rgba(20,24,48,.9);backdrop-filter:blur(18px);border-top:1px solid var(--line);
+    display:flex;padding-bottom:env(safe-area-inset-bottom)
+  }
+  .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--muted);transition:.2s}
+  .nav-btn.active{color:var(--accent)}
+  .nav-btn .ni{font-size:21px}
+  .nav-btn .nl{font-size:10.5px;font-weight:600}
+
+  .toast{
+    position:absolute;bottom:92px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ok);color:#0f1225;font-weight:600;padding:11px 20px;border-radius:30px;font-size:14px;
+    opacity:0;transition:.3s;pointer-events:none;z-index:50;white-space:nowrap
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <button class="theme-tog" id="themeTog" onclick="toggleTheme()">🌙</button>
+
+  <!-- ACCUEIL -->
+  <section class="screen active" id="s-home">
+    <h1 id="greet">Bonjour ☀️</h1>
+    <div class="sub" id="dateline"></div>
+
+    <div class="card hero" style="margin-top:18px">
+      <div class="q" id="quote">…</div>
+      <div class="by" id="quoteby"></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n" id="st-tasks">0</div><div class="l">Tâches faites</div></div>
+      <div class="stat"><div class="n" id="st-habits">0</div><div class="l">Habitudes</div></div>
+      <div class="stat"><div class="n" id="st-mood">—</div><div class="l">Humeur</div></div>
+    </div>
+
+    <div class="section-t">Ton intention du jour</div>
+    <div class="card intent">
+      <input id="intent" placeholder="Aujourd'hui, je veux…" autocomplete="off">
+    </div>
+
+    <div class="section-t">Accès rapide</div>
+    <div class="quick">
+      <div class="qbtn" onclick="go('breathe')"><div class="ico">🫧</div><div class="t">Respirer</div><div class="d">Calme-toi en 1 min</div></div>
+      <div class="qbtn" onclick="go('tasks')"><div class="ico">✓</div><div class="t">Mes tâches</div><div class="d">Organise ta journée</div></div>
+      <div class="qbtn" onclick="go('mood')"><div class="ico">💭</div><div class="t">Mon humeur</div><div class="d">Note comment tu vas</div></div>
+      <div class="qbtn" onclick="go('breathe'); setTimeout(()=>startBreath(),300)"><div class="ico">🧘</div><div class="t">Méditer</div><div class="d">Pause guidée</div></div>
+    </div>
+
+    <div class="section-t">Ta semaine</div>
+    <div class="card">
+      <div class="week" id="weekview"></div>
+    </div>
+  </section>
+
+  <!-- ORGANISER -->
+  <section class="screen" id="s-tasks">
+    <h1>Organiser</h1>
+    <div class="sub">Allège ta charge mentale.</div>
+
+    <div class="section-t">Tâches du jour</div>
+    <div class="addrow">
+      <input id="task-in" placeholder="Ajouter une tâche…" autocomplete="off">
+      <button onclick="addTask()">＋</button>
+    </div>
+    <div class="card" id="task-list" style="margin-top:12px"></div>
+
+    <div class="section-t">Habitudes</div>
+    <div class="card" id="habit-list"></div>
+  </section>
+
+  <!-- RESPIRER -->
+  <section class="screen" id="s-breathe">
+    <h1 style="text-align:center">Respirer</h1>
+    <div class="sub" style="text-align:center">Suis le rythme de la bulle.</div>
+    <div class="breath-wrap">
+      <div class="tech">
+        <div class="chip on" data-t="478" onclick="setTech(this,'478')">4-7-8 · Sommeil</div>
+        <div class="chip" data-t="box" onclick="setTech(this,'box')">Box · Focus</div>
+        <div class="chip" data-t="calm" onclick="setTech(this,'calm')">Calme · 5-5</div>
+      </div>
+      <div class="orb" id="orb"><div class="phase" id="phase">Prêt ?</div></div>
+      <button class="bigbtn" id="breath-btn" onclick="toggleBreath()">Commencer</button>
+      <div class="timer-disp" id="breath-timer"></div>
+    </div>
+
+    <div class="section-t">Sons d'ambiance</div>
+    <div class="card">
+      <div class="sounds" id="sounds">
+        <div class="sbtn" data-s="rain" onclick="toggleSound('rain')"><div class="si">🌧️</div><div class="st">Pluie</div><div class="sd">Douce averse</div></div>
+        <div class="sbtn" data-s="waves" onclick="toggleSound('waves')"><div class="si">🌊</div><div class="st">Vagues</div><div class="sd">Océan calme</div></div>
+        <div class="sbtn" data-s="wind" onclick="toggleSound('wind')"><div class="si">🍃</div><div class="st">Vent</div><div class="sd">Brise légère</div></div>
+        <div class="sbtn" data-s="night" onclick="toggleSound('night')"><div class="si">🌙</div><div class="st">Nuit</div><div class="sd">Bourdon zen</div></div>
+      </div>
+      <div class="vol-row">
+        <span>🔉</span>
+        <input type="range" id="vol" min="0" max="100" value="50" oninput="setVol(this.value)">
+        <span>🔊</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HUMEUR -->
+  <section class="screen" id="s-mood">
+    <h1>Humeur</h1>
+    <div class="sub">Comment tu te sens, là, maintenant ?</div>
+
+    <div class="card" style="margin-top:18px">
+      <div class="moods" id="moods">
+        <div class="mood" data-m="😣" data-v="Difficile">😣</div>
+        <div class="mood" data-m="😕" data-v="Bof">😕</div>
+        <div class="mood" data-m="😐" data-v="Neutre">😐</div>
+        <div class="mood" data-m="🙂" data-v="Bien">🙂</div>
+        <div class="mood" data-m="😄" data-v="Super">😄</div>
+      </div>
+      <textarea id="journal" placeholder="Qu'est-ce qui occupe ton esprit ? (optionnel)"></textarea>
+      <button class="savebtn" onclick="saveMood()">Enregistrer</button>
+    </div>
+
+    <div class="section-t">Ton journal</div>
+    <div class="card" id="mood-log"></div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-btn active" data-s="home" onclick="go('home')"><div class="ni">🏠</div><div class="nl">Accueil</div></div>
+    <div class="nav-btn" data-s="tasks" onclick="go('tasks')"><div class="ni">✓</div><div class="nl">Organiser</div></div>
+    <div class="nav-btn" data-s="breathe" onclick="go('breathe')"><div class="ni">🫧</div><div class="nl">Respirer</div></div>
+    <div class="nav-btn" data-s="mood" onclick="go('mood')"><div class="ni">💭</div><div class="nl">Humeur</div></div>
+  </nav>
+</div>
+
+<script>
+/* ============ STORAGE ============ */
+const DB = {
+  get(k,d){ try{return JSON.parse(localStorage.getItem('serein_'+k)) ?? d}catch(e){return d} },
+  set(k,v){ localStorage.setItem('serein_'+k, JSON.stringify(v)) }
+};
+const today = new Date().toISOString().slice(0,10);
+
+/* ============ NAV ============ */
+function go(s){
+  document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));
+  document.getElementById('s-'+s).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.s===s));
+  if(s!=='breathe' && breathing) stopBreath();
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+/* ============ THEME ============ */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeTog').textContent = t==='light' ? '🌙' : '☀️';
+  document.querySelector('meta[name=theme-color]').setAttribute('content', t==='light' ? '#f3f1fb' : '#0f1225');
+}
+function toggleTheme(){
+  const cur=DB.get('theme','dark'); const next=cur==='dark'?'light':'dark';
+  DB.set('theme',next); applyTheme(next);
+}
+
+/* ============ WEEK VIEW ============ */
+function renderWeek(){
+  const logs=DB.get('moodlog',[]);
+  const habits=DB.get('habits',[]);
+  const days=['D','L','Ma','Me','J','V','S'];
+  let html='';
+  for(let i=6;i>=0;i--){
+    const d=new Date(Date.now()-i*864e5);
+    const ds=d.toISOString().slice(0,10);
+    const m=logs.find(l=>l.date.slice(0,10)===ds);
+    const hdone=habits.filter(h=>h.hist&&h.hist.includes(ds)).length;
+    const pct=habits.length?Math.round(hdone/habits.length*100):0;
+    html+=`<div class="day ${i===0?'today':''}">
+      <div class="dl">${days[d.getDay()]}</div>
+      <div class="dm">${m?m.emoji:'·'}</div>
+      <div class="db"><i style="width:${pct}%"></i></div></div>`;
+  }
+  document.getElementById('weekview').innerHTML=html;
+}
+
+/* ============ HOME ============ */
+const quotes=[
+  ["Tu n'as pas à tout porter aujourd'hui. Juste le prochain pas.","Serein"],
+  ["Respire. Ce moment est le seul qui existe vraiment.","Thich Nhat Hanh"],
+  ["La simplicité est la sophistication suprême.","Léonard de Vinci"],
+  ["Le calme est une super-puissance.","—"],
+  ["Fais moins, mais mieux.","Dieter Rams"],
+  ["Ralentir, c'est aussi avancer.","Serein"],
+  ["Prends soin de toi : tu es la seule maison où tu vivras toujours.","—"]
+];
+function initHome(){
+  const h=new Date().getHours();
+  const g = h<6?"Bonne nuit 🌙":h<12?"Bonjour ☀️":h<18?"Bon après-midi 🌤️":"Bonsoir 🌆";
+  document.getElementById('greet').textContent=g;
+  document.getElementById('dateline').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const q=quotes[new Date().getDate()%quotes.length];
+  document.getElementById('quote').textContent='« '+q[0]+' »';
+  document.getElementById('quoteby').textContent='— '+q[1];
+  const intent=document.getElementById('intent');
+  intent.value=DB.get('intent_'+today,'');
+  intent.oninput=()=>DB.set('intent_'+today,intent.value);
+  refreshStats();
+}
+function refreshStats(){
+  const tasks=DB.get('tasks',[]);
+  document.getElementById('st-tasks').textContent=tasks.filter(t=>t.done).length;
+  const habits=DB.get('habits',defaultHabits());
+  document.getElementById('st-habits').textContent=habits.filter(h=>h.last===today).length+'/'+habits.length;
+  const logs=DB.get('moodlog',[]);
+  const tm=logs.find(l=>l.date.slice(0,10)===today);
+  document.getElementById('st-mood').textContent=tm?tm.emoji:'—';
+}
+
+/* ============ TASKS ============ */
+function addTask(){
+  const i=document.getElementById('task-in'); const v=i.value.trim(); if(!v)return;
+  const t=DB.get('tasks',[]); t.unshift({id:Date.now(),txt:v,done:false}); DB.set('tasks',t);
+  i.value=''; renderTasks(); refreshStats();
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.activeElement.id==='task-in')addTask(); });
+function toggleTask(id){
+  const t=DB.get('tasks',[]); const x=t.find(a=>a.id===id); if(x){x.done=!x.done; if(x.done)toast('Bravo 🎉');} DB.set('tasks',t); renderTasks(); refreshStats();
+}
+function delTask(id){ DB.set('tasks',DB.get('tasks',[]).filter(a=>a.id!==id)); renderTasks(); refreshStats(); }
+function renderTasks(){
+  const t=DB.get('tasks',[]); const el=document.getElementById('task-list');
+  if(!t.length){el.innerHTML='<div class="empty">Rien pour l\'instant. Ta tête est légère 🪶</div>';return;}
+  el.innerHTML=t.map(a=>`<div class="item ${a.done?'done':''}">
+    <div class="check ${a.done?'done':''}" onclick="toggleTask(${a.id})">${a.done?'✓':''}</div>
+    <div class="txt">${esc(a.txt)}</div>
+    <div class="del" onclick="delTask(${a.id})">✕</div></div>`).join('');
+}
+
+/* ============ HABITS ============ */
+function defaultHabits(){return [
+  {id:1,emoji:'💧',name:'Boire de l\'eau',last:null,streak:0,hist:[]},
+  {id:2,emoji:'🚶',name:'Bouger 10 min',last:null,streak:0,hist:[]},
+  {id:3,emoji:'📵',name:'Pause écrans',last:null,streak:0,hist:[]},
+  {id:4,emoji:'😴',name:'Dormir tôt',last:null,streak:0,hist:[]},
+];}
+function toggleHabit(id){
+  const h=DB.get('habits',defaultHabits()); const x=h.find(a=>a.id===id); if(!x)return;
+  if(!x.hist)x.hist=[];
+  if(x.last===today){ x.last=null; x.streak=Math.max(0,x.streak-1); x.hist=x.hist.filter(d=>d!==today); }
+  else{ const y=new Date(Date.now()-864e5).toISOString().slice(0,10); x.streak = x.last===y ? x.streak+1 : 1; x.last=today; if(!x.hist.includes(today))x.hist.push(today); toast('Continue comme ça 🔥'); }
+  DB.set('habits',h); renderHabits(); refreshStats(); renderWeek();
+}
+function renderHabits(){
+  const h=DB.get('habits',defaultHabits()); DB.set('habits',h);
+  document.getElementById('habit-list').innerHTML=h.map(a=>`<div class="habit">
+    <div class="emoji">${a.emoji}</div>
+    <div class="info"><div class="hn">${a.name}</div><div class="streak">🔥 ${a.streak} jour${a.streak>1?'s':''} d'affilée</div></div>
+    <div class="hdot ${a.last===today?'on':''}" onclick="toggleHabit(${a.id})">${a.last===today?'✓':''}</div></div>`).join('');
+}
+
+/* ============ BREATHING ============ */
+const TECH={
+  '478':{seq:[['Inspire',4],['Retiens',7],['Expire',8]],label:'4-7-8'},
+  'box': {seq:[['Inspire',4],['Retiens',4],['Expire',4],['Retiens',4]],label:'Box'},
+  'calm':{seq:[['Inspire',5],['Expire',5]],label:'Calme'}
+};
+let tech='478', breathing=false, bTimer=null, bStart=0;
+function setTech(el,t){
+  if(breathing)return;
+  tech=t; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on');
+}
+function toggleBreath(){ breathing?stopBreath():startBreath(); }
+function startBreath(){
+  breathing=true; bStart=Date.now();
+  document.getElementById('breath-btn').textContent='Arrêter';
+  document.getElementById('breath-btn').classList.add('stop');
+  runCycle();
+  bTimer=setInterval(()=>{
+    const s=Math.floor((Date.now()-bStart)/1000);
+    document.getElementById('breath-timer').textContent='⏱️ '+String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  },1000);
+}
+function runCycle(){
+  if(!breathing)return;
+  const seq=TECH[tech].seq; let i=0;
+  const orb=document.getElementById('orb'), phase=document.getElementById('phase');
+  function step(){
+    if(!breathing)return;
+    const [name,dur]=seq[i];
+    phase.textContent=name;
+    orb.style.transition=`transform ${dur}s ease-in-out`;
+    orb.classList.remove('grow','shrink');
+    void orb.offsetWidth;
+    if(name==='Inspire')orb.classList.add('grow');
+    else if(name==='Expire')orb.classList.add('shrink');
+    let left=dur;
+    const cd=setInterval(()=>{ left--; if(left>0&&breathing)phase.textContent=name+' · '+left; },1000);
+    setTimeout(()=>{ clearInterval(cd); i=(i+1)%seq.length; step(); }, dur*1000);
+  }
+  step();
+}
+function stopBreath(){
+  breathing=false; clearInterval(bTimer);
+  const orb=document.getElementById('orb');
+  orb.classList.remove('grow','shrink'); orb.style.transition='transform 1s';
+  document.getElementById('phase').textContent='Bien joué 🌿';
+  document.getElementById('breath-btn').textContent='Commencer';
+  document.getElementById('breath-btn').classList.remove('stop');
+  const s=Math.floor((Date.now()-bStart)/1000);
+  if(s>5)toast('Pause de '+s+'s terminée 🌿');
+}
+
+/* ============ MOOD ============ */
+let selMood=null;
+document.querySelectorAll('.mood').forEach(m=>m.onclick=()=>{
+  document.querySelectorAll('.mood').forEach(x=>x.classList.remove('sel'));
+  m.classList.add('sel'); selMood={emoji:m.dataset.m,val:m.dataset.v};
+});
+function saveMood(){
+  if(!selMood){toast('Choisis une humeur 🙂');return;}
+  const log=DB.get('moodlog',[]);
+  log.unshift({date:new Date().toISOString(),emoji:selMood.emoji,val:selMood.val,note:document.getElementById('journal').value.trim()});
+  DB.set('moodlog',log.slice(0,60));
+  document.getElementById('journal').value=''; selMood=null;
+  document.querySelectorAll('.mood').forEach(x=>x.classList.remove('sel'));
+  renderMoodLog(); refreshStats(); renderWeek(); toast('Enregistré 💜');
+}
+function renderMoodLog(){
+  const log=DB.get('moodlog',[]); const el=document.getElementById('mood-log');
+  if(!log.length){el.innerHTML='<div class="empty">Ton journal est vide. Note ta première humeur 💭</div>';return;}
+  el.innerHTML=log.slice(0,20).map(l=>{
+    const d=new Date(l.date);
+    const ds=d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="log-entry"><div class="em">${l.emoji}</div><div class="lt"><div class="ld">${ds} · ${l.val}</div>${l.note?`<div class="ln">${esc(l.note)}</div>`:''}</div></div>`;
+  }).join('');
+}
+
+/* ============ AMBIENT SOUNDS (Web Audio, no files) ============ */
+let actx=null, masterGain=null, activeSounds={};
+function ensureCtx(){
+  if(!actx){
+    actx=new (window.AudioContext||window.webkitAudioContext)();
+    masterGain=actx.createGain();
+    masterGain.gain.value=DB.get('vol',50)/100;
+    masterGain.connect(actx.destination);
+  }
+  if(actx.state==='suspended')actx.resume();
+}
+function makeNoise(){
+  const n=actx.sampleRate*2, buf=actx.createBuffer(1,n,actx.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+  const src=actx.createBufferSource(); src.buffer=buf; src.loop=true; return src;
+}
+function buildSound(kind){
+  const nodes=[]; const g=actx.createGain(); g.connect(masterGain); nodes.push(g);
+  if(kind==='rain'){
+    const src=makeNoise(); const hp=actx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=800;
+    const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=6000;
+    src.connect(hp); hp.connect(lp); lp.connect(g); g.gain.value=.5; src.start(); nodes.push(src);
+  } else if(kind==='waves'){
+    const src=makeNoise(); const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=500;
+    src.connect(lp); lp.connect(g); src.start(); nodes.push(src);
+    const lfo=actx.createOscillator(); lfo.frequency.value=.12; const lg=actx.createGain(); lg.gain.value=.4;
+    lfo.connect(lg); lg.connect(g.gain); g.gain.value=.4; lfo.start(); nodes.push(lfo);
+  } else if(kind==='wind'){
+    const src=makeNoise(); const bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=500; bp.Q.value=.7;
+    src.connect(bp); bp.connect(g); g.gain.value=.5; src.start(); nodes.push(src);
+    const lfo=actx.createOscillator(); lfo.frequency.value=.08; const lg=actx.createGain(); lg.gain.value=300;
+    lfo.connect(lg); lg.connect(bp.frequency); lfo.start(); nodes.push(lfo);
+  } else if(kind==='night'){
+    [110,164.8,220].forEach(f=>{ const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f;
+      const og=actx.createGain(); og.gain.value=.12; o.connect(og); og.connect(g); o.start(); nodes.push(o); });
+    g.gain.value=.5;
+  }
+  return nodes;
+}
+function toggleSound(kind){
+  ensureCtx();
+  const btn=document.querySelector(`.sbtn[data-s="${kind}"]`);
+  if(activeSounds[kind]){
+    activeSounds[kind].forEach(n=>{try{n.stop&&n.stop()}catch(e){} try{n.disconnect()}catch(e){}});
+    delete activeSounds[kind]; btn.classList.remove('on');
+  } else {
+    activeSounds[kind]=buildSound(kind); btn.classList.add('on');
+  }
+}
+function setVol(v){ DB.set('vol',v); if(masterGain)masterGain.gain.value=v/100; }
+
+/* ============ UTIL ============ */
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ============ INIT ============ */
+applyTheme(DB.get('theme','dark'));
+document.getElementById('vol').value=DB.get('vol',50);
+initHome(); renderTasks(); renderHabits(); renderMoodLog(); renderWeek();
+
+/* PWA service worker */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
